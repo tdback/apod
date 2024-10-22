@@ -3,6 +3,7 @@
 import argparse
 import requests
 from bs4 import BeautifulSoup
+from os import path
 
 URL = "https://apod.nasa.gov/apod/"
 
@@ -31,7 +32,7 @@ def main():
     href = soup.center.find_all('a')[1].get('href')
 
     image = f"{URL}{href}"
-    file = args.name if args.name else href.split('/')[-1]
+    file = path.expanduser(args.name) if args.name else href.split('/')[-1]
 
     download(image, file)
 

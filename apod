@@ -1,0 +1,39 @@
+#!/usr/bin/env python
+
+import argparse
+import requests
+from bs4 import BeautifulSoup
+
+URL = "https://apod.nasa.gov/apod/"
+
+def download(img, file):
+    with requests.get(img, stream=True) as r:
+        r.raise_for_status()
+        with open(file, 'wb') as f:
+            for chunk in r.iter_content(chunk_size=8096):
+                f.write(chunk)
+
+def main():
+    parser = argparse.ArgumentParser(
+        prog="apod",
+        description="Download the astronomy picture of the day.",
+    )
+
+    parser.add_argument(
+        dest="name",
+        nargs='?',
+        help="save the image as 'name'",
+    )
+
+    args = parser.parse_args()
+
+    soup = BeautifulSoup(requests.get(URL).content, "html.parser")
+    href = soup.center.find_all('a')[1].get('href')
+
+    image = f"{URL}{href}"
+    file = args.name if args.name else href.split('/')[-1]
+
+    download(image, file)
+
+if __name__ == "__main__":
+    main()

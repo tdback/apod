@@ -28,5 +28,5 @@ The script relies on the following Python3 libraries:
 - requests
 
 ## Installation (optional)
-The script can be build using `nix build`. This will generate an executable
-script in `./result/bin/`.
+The script can be built using `nix build`. This will pull in all the required
+dependencies and generate an executable script in `./result/bin/`.

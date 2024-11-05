@@ -26,3 +26,7 @@ options:
 The script relies on the following Python3 libraries:
 - beautifulsoup4 (bs4)
 - requests
+
+## Installation (optional)
+The script can be build using `nix build`. This will generate an executable
+script in `./result/bin/`.

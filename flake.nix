@@ -4,24 +4,22 @@
     flake-utils.url = "github:numtide/flake-utils";
   };
 
-  outputs = { self, nixpkgs, flake-utils }:
-    flake-utils.lib.eachDefaultSystem (system:
+  outputs = { ... }@inputs:
+    inputs.flake-utils.lib.eachDefaultSystem (system:
       let
         bin = "apod";
         version = "1.1.0";
-        pkgs = import nixpkgs { inherit system; };
+        pkgs = import inputs.nixpkgs { inherit system; };
       in
       {
         devShells.default = pkgs.mkShell {
           buildInputs = with pkgs; [
-            (python3.withPackages (p:
-              with p; [
-                beautifulsoup4
-                ipython
-                python-lsp-server
-                requests
-              ]
-            ))
+            (python3.withPackages (p: with p; [
+              beautifulsoup4
+              ipython
+              python-lsp-server
+              requests
+            ]))
             ruff
           ];
         };
@@ -39,7 +37,6 @@
           preBuild = ''
             cat > setup.py << EOF
             from setuptools import setup
-
             setup(
                 name='${bin}',
                 version='${version}',

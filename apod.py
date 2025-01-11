@@ -1,20 +1,15 @@
 #!/usr/bin/env python
 
+# apod: Scrape the astronomy picture of the day.
+
 import argparse
 import os
+import sys
+
 import requests
 from bs4 import BeautifulSoup
-from sys import stderr
 
 URL = "https://apod.nasa.gov/apod/"
-
-
-def download(img, file):
-    with requests.get(img, stream=True) as r:
-        r.raise_for_status()
-        with open(file, "wb") as f:
-            for chunk in r.iter_content(chunk_size=4096):
-                f.write(chunk)
 
 
 def main():
@@ -54,7 +49,7 @@ def main():
         if any(sep in args.name for sep in ["/", "\\"]):
             print(
                 "file name cannot contain a directory path, please use '-d' to specify the directory",
-                file=stderr,
+                file=sys.stderr,
             )
             return
 
@@ -67,14 +62,18 @@ def main():
             if not create.lower() == "y":
                 print(
                     "cannot continue without creating the parent directory",
-                    file=stderr,
+                    file=sys.stderr,
                 )
                 return
         os.mkdir(dir)
 
     file = os.path.join(dir, f"{args.name or href.split('/')[-1]}")
 
-    download(image, file)
+    with requests.get(image, stream=True) as r:
+        r.raise_for_status()
+        with open(file, "wb") as f:
+            for chunk in r.iter_content(chunk_size=4096):
+                f.write(chunk)
 
 
 if __name__ == "__main__":

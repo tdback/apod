@@ -1,57 +1,64 @@
 {
-  inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-    flake-utils.url = "github:numtide/flake-utils";
-  };
+  inputs.nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
 
-  outputs = { ... }@inputs:
-    inputs.flake-utils.lib.eachDefaultSystem (system:
-      let
-        bin = "apod";
-        version = "1.1.0";
-        pkgs = import inputs.nixpkgs { inherit system; };
-      in
-      {
-        devShells.default = pkgs.mkShell {
-          buildInputs = with pkgs; [
-            (python3.withPackages (p: with p; [
-              beautifulsoup4
-              ipython
-              python-lsp-server
-              requests
-            ]))
-            ruff
-          ];
-        };
+  outputs = { nixpkgs, ... }: let
+    supportedSystems = [
+      "x86_64-linux"
+      "x86_64-darwin"
+      "aarch64-linux"
+      "aarch64-darwin"
+    ];
 
-        defaultPackage = pkgs.python3Packages.buildPythonApplication {
-          pname = bin;
-          version = version;
-          src = ./.;
+    eachSystem = nixpkgs.lib.genAttrs supportedSystems;
+    pkgsBySystem = nixpkgs.lib.getAttrs supportedSystems nixpkgs.legacyPackages;
 
-          propagatedBuildInputs = with pkgs.python3Packages; [
+    forAllPkgs = fn:
+      nixpkgs.lib.mapAttrs (system: pkgs: (fn pkgs)) pkgsBySystem;
+
+    apodFor = pkgs: let
+      pname = "apod";
+      version = "1.2.0";
+    in
+      pkgs.python3Packages.buildPythonApplication {
+        inherit pname version;
+        src = ./.;
+
+        propagatedBuildInputs = with pkgs.python3Packages; [
+          beautifulsoup4
+          requests
+        ];
+
+        preBuild = ''
+          cat > setup.py << EOF
+          from setuptools import setup
+          setup(
+          name='${pname}',
+          version='${version}',
+          install_requires=['beautifulsoup4','requests'],
+          scripts=['${pname}.py'],
+          )
+          EOF
+        '';
+        postInstall = "mv -v $out/bin/${pname}.py $out/bin/${pname}";
+      };
+  in {
+    packages = forAllPkgs (pkgs: {
+      default = apodFor pkgs;
+    });
+
+    devShells = eachSystem (system: let
+      pkgs = import nixpkgs { inherit system; };
+    in {
+      default = pkgs.mkShell {
+        buildInputs = with pkgs; [
+          (python3.withPackages (p: with p; [
             beautifulsoup4
+            ipython
+            python-lsp-server
             requests
-          ];
-
-          preBuild = ''
-            cat > setup.py << EOF
-            from setuptools import setup
-            setup(
-                name='${bin}',
-                version='${version}',
-                install_requires=[
-                    'beautifulsoup4',
-                    'requests',
-                ],
-                scripts=['${bin}.py'],
-            )
-            EOF
-          '';
-
-          postInstall = ''
-            mv -v $out/bin/${bin}.py $out/bin/${bin}
-          '';
-        };
-      });
+          ]))
+        ];
+      };
+    });
+  };
 }

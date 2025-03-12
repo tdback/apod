@@ -5,7 +5,7 @@
 A script to scrape the [[https://apod.nasa.gov/apod/][Astronomy Picture of the Day]] (APOD) and download the featured image.
 
 * Usage
-#+begin_src shell
+#+begin_src
   usage: apod [-h] [-d DIR] [-f] [name]
 
   Download the astronomy picture of the day.

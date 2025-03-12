@@ -1,0 +1,40 @@
+#+TITLE: apod
+#+AUTHOR: Tyler Dunneback
+#+OPTIONS: toc:nil
+
+A script to scrape the [[https://apod.nasa.gov/apod/][Astronomy Picture of the Day]] (APOD) and download the featured image.
+
+* Usage
+#+begin_src shell
+  usage: apod [-h] [-d DIR] [-f] [name]
+
+  Download the astronomy picture of the day.
+
+  positional arguments:
+    name        save the image under an alternate name
+
+  options:
+    -h, --help  show this help message and exit
+    -d DIR      save the image to directory DIR
+    -f          do not prompt when creating a new directory
+#+end_src
+
+By default ~apod~ will extract and download the current day's APOD and save it to the local file system. You can optionally specify an alternate filename for the downloaded image, otherwise ~apod~ will use the extracted filename.
+
+If you are using ~nix~, you can run the script with ~nix run~:
+#+begin_src shell
+  nix run git+https://codeberg.org/tdback/apod
+#+end_src
+
+* Requirements
+The script relies on the following python3 libraries, which can be installed via ~pip~:
+#+begin_src shell
+  pip install beautifulsoup4 requests
+#+end_src
+
+If you are using ~nix~, you can create an executable with the following command:
+#+begin_src shell
+  nix build
+#+end_src
+
+The generated executable can be found in =./result/bin/=.
